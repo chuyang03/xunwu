@@ -2,8 +2,8 @@ package com.cy.xunwu.base;
 
 
 /**
- *
- * API格式封装
+ * API格式封装；
+ * 返回结果封装
  */
 
 public class ApiResponse {
