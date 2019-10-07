@@ -2,6 +2,7 @@ package com.cy.xunwu.config;
 
 import com.cy.xunwu.base.MyPasswordEncoder;
 import com.cy.xunwu.security.AuthProvider;
+import com.cy.xunwu.security.LoginAuthFailHandler;
 import com.cy.xunwu.security.LoginUrlEntryPoint;
 import com.qiniu.util.Auth;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .formLogin()
                 .loginProcessingUrl("/login")   //配置角色登陆处理入口
+                .failureHandler(authFailHandler())      //配置登陆用户验证失败处理器，如果密码或用户名不正确跳转到制定页面
                 .and()
                 .logout()
                 .logoutUrl("/logout")
@@ -85,7 +87,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public LoginUrlEntryPoint urlEntryPoint(){
         //默认走用户的登陆入口
-        return new LoginUrlEntryPoint("/url/login");
+        return new LoginUrlEntryPoint("/user/login");
     }
 
+    //登陆验证失败处理器
+    @Bean
+    public LoginAuthFailHandler authFailHandler(){
+        //这里实例化登陆入口映射器，会读取默认路径
+        return new LoginAuthFailHandler(urlEntryPoint());
+    }
 }
