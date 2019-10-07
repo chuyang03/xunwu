@@ -2,6 +2,7 @@ package com.cy.xunwu.config;
 
 import com.cy.xunwu.base.MyPasswordEncoder;
 import com.cy.xunwu.security.AuthProvider;
+import com.cy.xunwu.security.LoginUrlEntryPoint;
 import com.qiniu.util.Auth;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -39,7 +40,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .formLogin()
                 .loginProcessingUrl("/login")   //配置角色登陆处理入口
-                .and();
+                .and()
+                .logout()
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/logout/page")
+                .deleteCookies("JSESSIONID")        //登出用户以后删除cookie
+                .invalidateHttpSession(true)        //使session会话失效
+                .and()
+                .exceptionHandling()
+                .authenticationEntryPoint(urlEntryPoint())
+                .accessDeniedPage("/403");       //表示无权访问的登陆页面
+
 
         //关闭防御策略
         http.csrf().disable();
@@ -67,7 +78,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Bean
     public AuthProvider authProvider(){
+        //这里注入的是自己实现的AuthProvider类
         return new AuthProvider();
+    }
+
+    @Bean
+    public LoginUrlEntryPoint urlEntryPoint(){
+        //默认走用户的登陆入口
+        return new LoginUrlEntryPoint("/url/login");
     }
 
 }

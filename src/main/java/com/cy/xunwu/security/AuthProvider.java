@@ -36,6 +36,7 @@ public class AuthProvider implements AuthenticationProvider {
 
 
         String stringId = inputPassword + String.valueOf(user.getId());
+        //这里是32位小写字母加密
         String md5Pass = DigestUtils.md5DigestAsHex(stringId.getBytes());
 
         if (user.getPassword().equals(md5Pass)){
