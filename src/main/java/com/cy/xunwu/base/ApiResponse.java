@@ -8,12 +8,16 @@ package com.cy.xunwu.base;
 
 public class ApiResponse {
 
+    //状态码，是成功还是失败
     private int code;
 
+    //返回失败的消息
     private String message;
 
+    //数据
     private Object data;
 
+    //更多信息
     private boolean more;
 
     public ApiResponse(int code, String message, Object data) {
