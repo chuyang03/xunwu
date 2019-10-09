@@ -84,7 +84,8 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements Application
 	}
 	/**
      * Bean Util
-     * @return
+	 *
+	 *这个类可以将类进行转化
      */
     @Bean
     public ModelMapper modelMapper() {

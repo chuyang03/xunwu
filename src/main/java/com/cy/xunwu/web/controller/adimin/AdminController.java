@@ -2,29 +2,43 @@ package com.cy.xunwu.web.controller.adimin;
 
 
 import com.cy.xunwu.base.ApiResponse;
+import com.cy.xunwu.entity.SupportAddress;
+import com.cy.xunwu.service.house.AddressService;
+import com.cy.xunwu.service.house.HouseService;
 import com.cy.xunwu.service.house.QiNiuService;
+import com.cy.xunwu.web.dto.HouseDTO;
 import com.cy.xunwu.web.dto.QiNiuPutResult;
+import com.cy.xunwu.web.dto.ServiceResult;
+import com.cy.xunwu.web.dto.SupportAddressDTO;
+import com.cy.xunwu.web.form.HouseForm;
 import com.google.gson.Gson;
 import com.qiniu.common.QiniuException;
 import com.qiniu.http.Response;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.Valid;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
 @Controller
 public class AdminController {
 
     @Autowired
     private QiNiuService qiNiuService;
+
+    @Autowired
+    private AddressService addressService;
+
+    @Autowired
+    private HouseService houseService;
 
     @Autowired
     private Gson gson;
@@ -133,5 +147,45 @@ public class AdminController {
      *     }
      *
      */
+
+
+    /**
+     * @ModelAttribute("form-house-add")这个注解表示将这个表单与前端的表单进行绑定
+     *
+     */
+    //添加房源信息
+    @PostMapping("admin/add/house")
+    @ResponseBody
+    public ApiResponse addHouse(@Valid @ModelAttribute("form-house-add") HouseForm houseForm,
+                                BindingResult bindingResult){
+
+        //如果绑定结果出错
+        if (bindingResult.hasErrors()){
+            return new ApiResponse(HttpStatus.BAD_REQUEST.value(), bindingResult.getAllErrors().get(0).getDefaultMessage(), null);
+        }
+
+        if (houseForm.getPhotos() == null || houseForm.getCover() == null){
+            return ApiResponse.ofMessage(HttpStatus.BAD_REQUEST.value(), "必须上传图片");
+        }
+
+        Map<SupportAddress.Level, SupportAddressDTO> addressMap = addressService.findCityAndRegion(houseForm.getCityEnName(), houseForm.getRegionEnName());
+        if (addressMap.keySet().size() != 2){
+
+            return ApiResponse.ofStatus(ApiResponse.Status.NOT_VALID_PARAM);
+        }
+
+        /**
+         * 自定义结果集ServiceResult包含三个属性，成功的标志，失败需要返回的信息，返回的数据
+         *
+         * success、message、result
+         */
+        ServiceResult<HouseDTO> serviceResult = houseService.save(houseForm);
+        if (serviceResult.isSuccess()){
+
+            return ApiResponse.ofSuccess(serviceResult.getResult());
+        }
+
+        return ApiResponse.ofStatus(ApiResponse.Status.NOT_VALID_PARAM);
+    }
 
 }
